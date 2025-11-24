@@ -1,2 +1,36 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+name: CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Validar sintaxe HTML
+        run: |
+          echo "Validando arquivos HTML..."
+          if grep -R "<html" -n site/; then
+            echo "HTML encontrado e aparentemente válido."
+          else
+            echo "Arquivo HTML não encontrado ou inválido!"
+            exit 1
+          fi
+
+      - name: Rodar testes simples
+        run: |
+          echo "Executando testes..."
+          [ -f site/index.html ] && echo "index.html existe — OK"
+
+      - name: Gerar artefato do site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site/
